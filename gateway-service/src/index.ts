@@ -1,15 +1,13 @@
-import express, { Request, Response, NextFunction } from 'express';
-import { Options } from 'http-proxy-middleware';
+// gateway/index.ts
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import jwt from 'jsonwebtoken';
-import csurf from 'csurf';
 import hpp from 'hpp';
-import config from './config/index'; // Import config
 import connectToMongo from './config/mongoConnection';
-import {  ClientRequest } from 'http'; // Import types
+import config from './config/index';
 import logger from './config/logger';
 
 dotenv.config();
@@ -20,61 +18,39 @@ app.use(cors());
 app.use(helmet());
 
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
 });
 
 app.use(limiter);
-
-// Prevent HTTP parameter pollution
 app.use(hpp());
-
-const csrfProtection = csurf({
-    cookie: true,
-});
-app.use(csrfProtection);
-
 connectToMongo();
 
-const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
-
-    if (authHeader) {
-        const token = authHeader.split(' ')[1];
-
-        jwt.verify(token, process.env.JWT_SECRET as string, (err, user) => {
-            if (err) {
-                return res.sendStatus(403);
-            }
-
-            (req as any).user = user;
-            next();
-        });
-    } else {
-        res.sendStatus(401);
-    }
-};
-
-interface CustomOptions extends Options {
-    onProxyReq?: (proxyReq: ClientRequest, req: Request, res: Response) => void;
-}
-
+// Microservice URLs
 const services = {
-    '/auth': config.authServiceUrl,
+    '/user': config.userServiceUrl,
     '/cart': config.cartServiceUrl,
     '/discount': config.discountServiceUrl,
     '/order': config.orderServiceUrl,
     '/payment': config.paymentServiceUrl,
+    '/inventory': config.inventoryServiceUrl,
+    '/product': config.productServiceUrl, // Proxy for product service
+    '/review-rating': config.reviewRatingServiceUrl,
+    '/shipping': config.shippingServiceUrl,
+    '/notification': config.notificationServiceUrl,
 } as const;
 
-app.get('/health', (req: Request, res: Response) => {
-    res.status(200).json({ status: 'Gateway is running' });
+// Apply proxy for each service
+Object.keys(services).forEach((service) => {
+    const serviceUrl = services[service as keyof typeof services];
+    app.use(service, createProxyMiddleware({
+        target: serviceUrl,
+        changeOrigin: true,
+    }));
 });
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Internal Server Error' });
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'Gateway is running' });
 });
 
 app.listen(PORT, () => {
