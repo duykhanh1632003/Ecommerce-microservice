@@ -1,18 +1,19 @@
-import * as jwt from 'jsonwebtoken';
-import * as crypto from 'crypto'; // Import crypto using named import
+// src/utils/authUtils.ts
+import jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 import mongoose from 'mongoose';
-import { Token } from 'src/models/token.model';
+import { Token } from '../models/token.model';
 
 const generateSecret = (): string => {
   return crypto.randomBytes(64).toString('hex');
 };
 
-const createTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
+export const createTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
   const accessSecret = generateSecret();
   const refreshSecret = generateSecret();
 
-  const accessToken = jwt.sign({ id: userId }, accessSecret, { expiresIn: '15d' });
-  const refreshToken = jwt.sign({ id: userId }, refreshSecret, { expiresIn: '30d' });
+  const accessToken = jwt.sign({ id: userId, role: "client" }, accessSecret, { expiresIn: '15d' });
+  const refreshToken = jwt.sign({ id: userId, role: "client" }, refreshSecret, { expiresIn: '30d' });
 
   const tokenDocument = await Token.create({
     accessToken,
@@ -25,9 +26,8 @@ const createTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
 
   await tokenDocument.save();
 
-  return { accessToken: `Bearer ${accessToken}`,
+  return {
+    accessToken: `Bearer ${accessToken}`,
     refreshToken: `Bearer ${refreshToken}`,
- };
+  };
 };
-
-export default createTokens;
