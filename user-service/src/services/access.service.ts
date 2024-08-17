@@ -1,14 +1,13 @@
-// src/services/access.service.ts
-import { IUser } from '../interfaces/user.interfaces';
-import { User } from '../models/user.model';
 import { createTokens } from '../utils/authUtils';
 import { ValidationError } from '../utils/errorHandler';
-import { registerValidation, loginValidation } from '../validations/auth.validation';
 import { Token } from '../models/token.model';
-import * as Joi from 'joi';
+import { User } from '../models/user.model';
+import { registerValidation, loginValidation } from '../validations/validation'; // Ensure these are correctly imported
+import { IUser } from '../interfaces/user.interface';
+import Joi from 'joi';
 
 export class AccessService {
-  async createUser(userData: IUser): Promise<any> {
+  async createUser(userData : IUser): Promise<any> {
     // Validate user data
     const { error } = registerValidation.validate(userData);
     if (error) {
@@ -16,8 +15,7 @@ export class AccessService {
     }
 
     // Create and save the user
-    const user = new User(userData);
-    await user.save();
+    const user = await User.create(userData);
 
     // Generate tokens
     return createTokens(user._id);
@@ -45,7 +43,7 @@ export class AccessService {
   async refreshAccessToken(refreshToken: string): Promise<any> {
     // Validate the token
     const { error } = Joi.string().required().validate(refreshToken);
-    if (error) {
+    if (error) {  
       throw new ValidationError(error.details[0].message);
     }
 
@@ -58,7 +56,7 @@ export class AccessService {
     // Generate new tokens
     return createTokens(tokenDocument.userId);
   }
-
+  
   async revokeToken(refreshToken: string): Promise<any> {
     // Validate the token
     const { error } = Joi.string().required().validate(refreshToken);

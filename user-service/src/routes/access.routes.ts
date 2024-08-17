@@ -8,5 +8,4 @@ router.post('/login', AccessController.login);
 router.post('/token', AccessController.refreshToken);
 router.post('/revoke', AccessController.revokeToken);
 
-
 export default router;

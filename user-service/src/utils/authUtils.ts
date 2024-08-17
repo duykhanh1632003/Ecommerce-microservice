@@ -15,7 +15,7 @@ export const createTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
   const accessToken = jwt.sign({ id: userId, role: "client" }, accessSecret, { expiresIn: '15d' });
   const refreshToken = jwt.sign({ id: userId, role: "client" }, refreshSecret, { expiresIn: '30d' });
 
-  const tokenDocument = await Token.create({
+   await Token.create({
     accessToken,
     accessSecret,
     refreshToken,
@@ -23,8 +23,6 @@ export const createTokens = async (userId: mongoose.Schema.Types.ObjectId) => {
     userId,
     expiresAt: new Date(Date.now() + 60 * 60 * 24 * 30 * 1000), // 30 days later
   });
-
-  await tokenDocument.save();
 
   return {
     accessToken: `Bearer ${accessToken}`,

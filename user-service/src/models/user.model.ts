@@ -1,28 +1,16 @@
-import mongoose, { Schema, Document } from 'mongoose';
+// src/models/user.model.ts
+import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
-import toIdPlugin from '../utils/toIdPlugin';
+import { IUser, IBank, IAddress } from '../interfaces/user.interface';
+import toIdPlugin from './plugin/toIdPlugin';
 
-export interface IUser extends Document {
-  username: string;
-  name: string;
-  email: string;
-  primaryPhoneNumber: string;
-  gender: 'Male' | 'Female' | 'Other';
-  dateOfBirth: Date;
-  password: string;
-  banks: Array<typeof BankSchema>;
-  addresses: Array<typeof AddressSchema>;
-  avatar: string;
-  comparePassword(password: string): Promise<boolean>;
-}
-
-const BankSchema = new Schema({
+const BankSchema = new Schema<IBank>({
   bankName: { type: String, required: true },
   accountNumber: { type: String, required: true },
   accountHolderName: { type: String, required: true },
 }, { _id: false });
 
-const AddressSchema = new Schema({
+const AddressSchema = new Schema<IAddress>({
   addressLine1: { type: String, required: true },
   addressLine2: { type: String },
   city: { type: String, required: true },

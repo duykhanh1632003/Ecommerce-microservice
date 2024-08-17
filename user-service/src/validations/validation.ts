@@ -41,3 +41,11 @@ export const loginValidation = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().min(6).required(),
 });
+
+
+export const tokenValidation = Joi.object({
+  refreshToken: Joi.string().required().messages({
+    'string.empty': 'Refresh token cannot be empty',
+    'any.required': 'Refresh token is required',
+  }),
+});
