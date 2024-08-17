@@ -42,14 +42,21 @@ class InternalServerError extends AppError {
 }
 
 class BadRequestError extends AppError {
-    constructor(message: string = 'Bad request') {
+    constructor(message: string = 'Bad request', originalError?: Error) {
         super(message, 400);
+        if (originalError) {
+            this.message += `: ${originalError.message}`;
+        }
     }
 }
 
+
 class ForbiddenError extends AppError {
-    constructor(message: string = 'Forbidden') {
+    constructor(message: string = 'Forbidden', originalError?: Error) {
         super(message, 403);
+         if (originalError) {
+            this.message += `: ${originalError.message}`;
+        }
     }
 }
 

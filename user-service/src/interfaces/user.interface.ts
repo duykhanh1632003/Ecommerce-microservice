@@ -1,5 +1,5 @@
 // src/interfaces/user.interface.ts
-import { Document } from 'mongoose';
+import { Document, ObjectId } from 'mongoose';
 
 export interface IBank {
   bankName: string;
@@ -30,3 +30,8 @@ export interface IUser extends Document {
   avatar: string;
   comparePassword(password: string): Promise<boolean>;
 }
+
+export interface User {
+  id: ObjectId;
+}
+
