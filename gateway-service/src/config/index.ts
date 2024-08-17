@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+
+dotenv.config()
+
 interface Config {
   port: number;
   userServiceUrl: string;
@@ -14,6 +18,8 @@ interface Config {
   mongoDbUri: string;
 }
 
+
+
 const config: Config = {
   port: parseInt(process.env.PORT as string, 10) || 3000,
   userServiceUrl: process.env.USER_SERVICE_URL as string,
@@ -27,7 +33,7 @@ const config: Config = {
   shippingServiceUrl: process.env.SHIPPING_SERVICE_URL as string,
   notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL as string,
   jwtSecret: process.env.JWT_SECRET as string,
-  mongoDbUri: process.env.MONGODB_URI as string || 'mongodb://localhost:27017/gateway-service',
+  mongoDbUri: process.env.MONGODB_URI as string ,
 };
 
 export default config;

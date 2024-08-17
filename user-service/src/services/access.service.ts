@@ -1,5 +1,5 @@
 import { createTokens } from '../utils/authUtils';
-import { ValidationError } from '../utils/errorHandler';
+import { BadRequestError, ValidationError } from '../utils/errorHandler';
 import { Token } from '../models/token.model';
 import { User } from '../models/user.model';
 import { registerValidation, loginValidation } from '../validations/validation'; // Ensure these are correctly imported
@@ -13,32 +13,59 @@ export class AccessService {
     if (error) {
       throw new ValidationError(error.details[0].message);
     }
-
+    const existingUser = await User.findOne({ email: userData.email });
+    if (existingUser) {
+      throw new BadRequestError('Email already exists');
+    }
+    const existingUserName = await User.findOne({ username: userData.username });
+    if (existingUserName) {
+      throw new BadRequestError('Username already exists');
+    }
     // Create and save the user
     const user = await User.create(userData);
 
     // Generate tokens
-    return createTokens(user._id);
+    const tokens  = createTokens(user.id);
+    return {
+      tokens,
+      user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          primaryPhoneNumber: user.primaryPhoneNumber,
+      },
+    }
   }
 
-  async loginUser(email: string, password: string): Promise<any> {
-    // Validate login data
-    const { error } = loginValidation.validate({ email, password });
-    if (error) {
-      throw new ValidationError(error.details[0].message);
-    }
+    async loginUser(email: string, password: string): Promise<any> {
+      // Validate login data
+      const { error } = loginValidation.validate({ email, password });
+      if (error) {
+        throw new ValidationError(error.details[0].message);
+      }
 
-    // Find the user by email
-    const user = await User.findOne({ email });
+      // Find the user by email
+      const user = await User.findOne({ email });
 
-    // Validate password
-    if (!user || !(await user.comparePassword(password))) {
-      throw new ValidationError('Invalid email or password');
-    }
+      // Validate password
+      if (!user || !(await user.comparePassword(password))) {
+        throw new ValidationError('Invalid email or password');
+      }
 
-    // Generate tokens
-    return createTokens(user._id);
-  }
+      // Generate tokens
+      const tokens = await createTokens(user.id);
+      return {
+      tokens,
+      user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          primaryPhoneNumber: user.primaryPhoneNumber,
+      },
+  };  
+}
 
   async refreshAccessToken(refreshToken: string): Promise<any> {
     // Validate the token

@@ -24,8 +24,6 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(hpp());
-connectToMongo();
-
 // Microservice URLs
 const services = {
     '/user': config.userServiceUrl,
@@ -40,9 +38,15 @@ const services = {
     '/notification': config.notificationServiceUrl,
 } as const;
 
-// Apply proxy for each service
+// Check if all service URLs are provided
 Object.keys(services).forEach((service) => {
     const serviceUrl = services[service as keyof typeof services];
+
+    if (!serviceUrl) {
+        logger.error(`Missing target URL for ${service}`);
+        throw new Error(`Missing target URL for ${service}`);
+    }
+
     app.use(service, createProxyMiddleware({
         target: serviceUrl,
         changeOrigin: true,

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
-// Mongoose plugin to convert _id to id
+// Mongoose plugin to convert _id to id and filter out unnecessary fields
 const toIdPlugin = (schema: Schema) => {
   // Add a virtual id field
   schema.virtual('id').get(function () {
@@ -12,7 +12,12 @@ const toIdPlugin = (schema: Schema) => {
     virtuals: true,
     versionKey: false,
     transform: (doc, ret) => {
-      delete ret._id; // Remove _id from the response
+      // Remove unnecessary fields
+      delete ret._id;
+      delete ret.password;
+      delete ret.createdAt;
+      delete ret.updatedAt;
+      delete ret.__v;
     },
   });
 };

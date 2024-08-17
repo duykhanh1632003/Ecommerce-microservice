@@ -25,12 +25,12 @@ const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   primaryPhoneNumber: { type: String, required: true },
-  gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-  dateOfBirth: { type: Date, required: true },
+  gender: { type: String, enum: ['Male', 'Female', 'Other'], default: null },
+  dateOfBirth: { type: Date, default: null },
   password: { type: String, required: true },
-  banks: [BankSchema],
-  addresses: [AddressSchema],
-  avatar: { type: String },
+  banks: { type: [BankSchema], default: [] },
+  addresses: { type: [AddressSchema], default: [] },
+  avatar: { type: String, default: null },
 }, { timestamps: true });
 
 UserSchema.plugin(toIdPlugin);
@@ -48,5 +48,6 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.comparePassword = function (password: string): Promise<boolean> {
   return bcrypt.compare(password, this.password);
 };
+
 
 export const User = mongoose.model<IUser>('User', UserSchema);

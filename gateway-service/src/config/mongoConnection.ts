@@ -4,7 +4,9 @@ import logger from "./logger";
 
 const connectToMongo = async () => {
   try {
-    await mongoose.connect(config.mongoDbUri);
+    await mongoose.connect(config.mongoDbUri, {
+      dbName: 'gateway_service', 
+    });
     logger.info('Connected to MongoDB successfully');
   } catch (error: unknown) {
     if (error instanceof Error) {
