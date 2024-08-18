@@ -1,40 +1,65 @@
 import { createTokens } from '../utils/authUtils';
-import { BadRequestError, ValidationError } from '../utils/errorHandler';
+import { BadRequestError, NotFoundError, ValidationError } from '../utils/errorHandler';
 import { Token } from '../models/token.model';
 import { User } from '../models/user.model';
-import { registerValidation, loginValidation } from '../validations/validation'; // Ensure these are correctly imported
+import {  loginValidation } from '../validations/validation'; // Ensure these are correctly imported
 import { IUser } from '../interfaces/user.interface';
 import Joi from 'joi';
+import { emailService } from './email.service';
+import { jwt } from 'jsonwebtoken';
+import config from '../config';
 
 export class AccessService {
-  async createUser(userData : IUser): Promise<any> {
-    // Validate user data
-    const { error } = registerValidation.validate(userData);
-    if (error) {
-      throw new ValidationError(error.details[0].message);
-    }
+async registerUser(userData: IUser): Promise<any> {
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
-      throw new BadRequestError('Email already exists');
+      throw new BadRequestError('Email is already in use');
     }
-    const existingUserName = await User.findOne({ username: userData.username });
-    if (existingUserName) {
-      throw new BadRequestError('Username already exists');
-    }
-    // Create and save the user
-    const user = await User.create(userData);
 
-    // Generate tokens
-    const tokens  = createTokens(user.id);
+    const newUser = await User.create(userData);
+
+    // Tạo token xác nhận email
+    const emailToken = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      config.verifyEmail || 'emailSecret', // Sử dụng secret từ env
+      { expiresIn: '24h' } // Token hết hạn sau 24 giờ
+    );
+    newUser.verificationToken = emailToken;
+
+    await newUser.save();
+
+    // Gửi email xác nhận
+    await emailService.sendVerificationEmail(newUser.email, emailToken);
+
+    // Tạo access và refresh tokens
+    const tokens = createTokens(newUser.id);
+
     return {
       tokens,
       user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          name: user.name,
-          primaryPhoneNumber: user.primaryPhoneNumber,
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name,
+        primaryPhoneNumber: newUser.primaryPhoneNumber,
       },
+    };
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    try {
+      const decoded = jwt.verify(token, config.verifyEmail || 'emailSecret') as { id: string; email: string };
+
+      const user = await User.findOne({ id: decoded.id, verificationToken: token });
+      if (!user) {
+        throw new NotFoundError('Invalid verification token');
+      }
+
+      user.isEmailVerified = true;
+      user.verificationToken = undefined; // Xóa token sau khi xác thực
+      await user.save();
+    } catch (error) {
+      throw new ValidationError('Invalid or expired token');
     }
   }
 
