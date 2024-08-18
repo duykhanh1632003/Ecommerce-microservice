@@ -29,16 +29,11 @@ export const registerValidation = Joi.object({
   }),
 });
 
-export const loginValidation = Joi.object({
-  email: Joi.string().required().messages({
-    'string.empty': `Email cannot be an empty field`,
-    'any.required': `Email is a required field`,
-  }),
-  password: Joi.string().min(6).required().messages({
-    'string.min': `Password should have a minimum length of {#limit}`,
-    'any.required': `Password is a required field`,
-  }),
+const loginValidation = Joi.object({
+  identifier: Joi.string().required(), // Can be either username or email
+  password: Joi.string().required(),
 });
+
 
 export const tokenValidation = Joi.object({
   refreshToken: Joi.string().required().messages({

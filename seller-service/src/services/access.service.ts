@@ -6,7 +6,7 @@ import {  loginValidation } from '../validations/validation'; // Ensure these ar
 import { IUser } from '../interfaces/user.interface';
 import Joi from 'joi';
 import { emailService } from './email.service';
-import { jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import config from '../config';
 
 export class AccessService {
@@ -63,34 +63,37 @@ async registerUser(userData: IUser): Promise<any> {
     }
   }
 
-    async loginUser(email: string, password: string): Promise<any> {
+        async loginUser(identifier: string, password: string): Promise<any> {
       // Validate login data
-      const { error } = loginValidation.validate({ email, password });
+      const { error } = loginValidation.validate({ identifier, password });
       if (error) {
         throw new ValidationError(error.details[0].message);
       }
 
-      // Find the user by email
-      const user = await User.findOne({ email });
+      // Find the user by either email or username
+      const user = await User.findOne({
+        $or: [{ email: identifier }, { username: identifier }],
+      });
 
       // Validate password
       if (!user || !(await user.comparePassword(password))) {
-        throw new ValidationError('Invalid email or password');
+        throw new ValidationError('Invalid username/email or password');
       }
 
       // Generate tokens
       const tokens = await createTokens(user.id);
       return {
-      tokens,
-      user: {
+        tokens,
+        user: {
           id: user.id,
           username: user.username,
           email: user.email,
           name: user.name,
           primaryPhoneNumber: user.primaryPhoneNumber,
-      },
-  };  
-}
+        },
+      };
+    }
+
 
   async refreshAccessToken(refreshToken: string): Promise<any> {
     // Validate the token
@@ -99,10 +102,10 @@ async registerUser(userData: IUser): Promise<any> {
       throw new ValidationError(error.details[0].message);
     }
 
-    // Find the token document
-    const tokenDocument = await Token.findOne({ refreshToken });
-    if (!tokenDocument) {
-      throw new ValidationError('Invalid refresh token');
+// Find the token document
+const tokenDocument = await Token.findOne({ refreshToken });
+if (!tokenDocument) {
+  throw new ValidationError('Invalid refresh token');
     }
 
     // Generate new tokens

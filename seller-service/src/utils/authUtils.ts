@@ -4,7 +4,6 @@ import * as crypto from 'crypto';
 import { Types } from 'mongoose';
 import { Token } from '../models/token.model';
 import { BadRequestError } from './errorHandler';
-import mongoose from 'mongoose';
 
 // Custom request interface is now globally extended
 
