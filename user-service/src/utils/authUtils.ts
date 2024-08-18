@@ -1,9 +1,12 @@
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
-import  { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { Token } from '../models/token.model';
-import { NextFunction, Request, Response } from 'express';
 import { BadRequestError } from './errorHandler';
+import mongoose from 'mongoose';
+
+// Custom request interface is now globally extended
 
 const generateSecret = (): string => {
   return crypto.randomBytes(64).toString('hex');
@@ -31,27 +34,29 @@ export const createTokens = async (userId: Types.ObjectId) => {
   };
 };
 
-export const authThenToken = async (req: Request, res: Response, next: NextFunction) => {
+export const authThenToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const accessToken = req.headers['authorization']?.split(' ')[1];
-    const refreshToken = req.headers['refreshToken'] as string;
+    const refreshToken = req.headers['refreshtoken'] as string;
     const clientId = req.headers['x-client-id'] as string;
 
     if (!accessToken || !refreshToken || !clientId) {
-      return res.status(401).json({ message: 'Missing authentication headers' });
+      res.status(401).json({ message: 'Missing authentication headers' });
+      return;
     }
-    
+
     const tokenDocument = await Token.findOne({ accessToken }).populate('userId');
     if (!tokenDocument || tokenDocument.isExpiredOrRevoked()) {
-      return res.status(401).json({ message: 'Access Token is invalid or expired' });
+      res.status(401).json({ message: 'Access Token is invalid or expired' });
+      return;
     }
 
     const decoded = jwt.verify(accessToken, tokenDocument.accessSecret) as { id: string; role: string };
-    req.user = { id: new Types.ObjectId(decoded.id), role: decoded.role }; // Ensure the correct type
+    req.user = { id: new Types.ObjectId(decoded.id), role: decoded.role };
 
     next();
   } catch (error) {
     const errorMessage = `Authentication failed: ${(error as Error).message}`;
-    throw new BadRequestError(errorMessage);
+    next(new BadRequestError(errorMessage));
   }
 };

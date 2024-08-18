@@ -1,5 +1,6 @@
 // src/interfaces/user.interface.ts
-import { Document, ObjectId } from 'mongoose';
+import { Request } from 'express';
+import mongoose, { Document, ObjectId } from 'mongoose';
 
 export interface IBank {
   bankName: string;
@@ -7,7 +8,7 @@ export interface IBank {
   accountHolderName: string;
 }
 
-export interface IAddress {
+export interface IAddress {   
   addressLine1: string;
   addressLine2?: string;
   city: string;

@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { ErrorHandler } from '../utils/errorHandler';
 import { userService } from '../services/user.service';
-import { ObjectId, Types } from 'mongoose';
-import  mongoose  from 'mongoose';
+import mongoose from 'mongoose';
 
 export class UserController {
   static async editInformation(req: Request, res: Response) {
