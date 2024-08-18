@@ -6,7 +6,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import hpp from 'hpp';
-import connectToMongo from './config/mongoConnection';
 import config from './config/index';
 import logger from './config/logger';
 

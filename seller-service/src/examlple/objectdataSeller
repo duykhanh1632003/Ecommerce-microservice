@@ -1,0 +1,28 @@
+const sampleUser = {
+  username: 'john_doe',
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  isEmailVerified: false,
+  primaryPhoneNumber: '+84987654321',
+  gender: 'Male',
+  dateOfBirth: new Date('1985-05-15'),
+  password: 'StrongPassword123!',
+  idCardNumber: '123456789',
+  idCardIssuedDate: new Date('2010-06-20'),
+  idCardIssuedPlace: 'Hanoi, Vietnam',
+  bank: {
+    bankName: 'Vietcombank',
+    accountNumber: '001122334455',
+    accountHolderName: 'John Doe',
+  },
+  address: {
+    addressLine1: '123 Main Street',
+    addressLine2: 'Apartment 4B',
+    city: 'Ho Chi Minh City',
+    state: 'Ho Chi Minh',
+    postalCode: '700000',
+    country: 'Vietnam',
+    phoneNumber: '+84987654321',
+  },
+  avatar: 'https://example.com/avatar.jpg',
+};
