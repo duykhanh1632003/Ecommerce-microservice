@@ -1,0 +1,25 @@
+version: "3"
+services:
+  nosql-db:
+    image: mvertes/alpine-mongo
+    ports:
+      - "27018:27017"
+    container_name: nosql-db
+    volumes:
+      - ./db/:/data/db
+  user:
+    build: 
+      dockerfile: Dockerfile   
+      context: ./user-
+    container_name: user-service
+    ports:
+      - "3001:3001"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    volumes:
+      - /app/user-service/node_modules
+
+
+      
+     

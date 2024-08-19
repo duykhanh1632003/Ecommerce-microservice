@@ -10,6 +10,24 @@ import jwt from 'jsonwebtoken';
 import config from '../config';
 
 export class AccessService {
+async verifyToken({ accessToken, refreshToken, clientId }: { accessToken: string, refreshToken: string, clientId: string }): Promise<any> {
+    const tokenDocument = await Token.findOne({ accessToken });
+
+    if (!tokenDocument || tokenDocument.isExpiredOrRevoked()) {
+      throw new ValidationError('Access Token is invalid or expired');
+    }
+
+    const decoded = jwt.verify(accessToken, tokenDocument.accessSecret) as { id: string; role: string };
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    return { isValid: true, user: { id: user.id, role: decoded.role } };
+  }
+
+
 async registerUser(userData: IUser): Promise<any> {
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
@@ -102,10 +120,10 @@ async registerUser(userData: IUser): Promise<any> {
       throw new ValidationError(error.details[0].message);
     }
 
-// Find the token document
-const tokenDocument = await Token.findOne({ refreshToken });
-if (!tokenDocument) {
-  throw new ValidationError('Invalid refresh token');
+    // Find the token document
+    const tokenDocument = await Token.findOne({ refreshToken });
+    if (!tokenDocument) {
+      throw new ValidationError('Invalid refresh token');
     }
 
     // Generate new tokens

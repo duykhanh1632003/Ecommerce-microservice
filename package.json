@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@types/nodemailer": "^6.4.15",
-    "nodemailer": "^6.9.14"
+    "axios": "^1.7.4",
+    "nodemailer": "^6.9.14",
+    "slugify": "^1.6.6"
   }
 }

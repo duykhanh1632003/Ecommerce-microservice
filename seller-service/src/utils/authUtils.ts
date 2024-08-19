@@ -35,8 +35,13 @@ export const createTokens = async (userId: Types.ObjectId) => {
 
 export const authThenToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const accessToken = req.headers['authorization']?.split(' ')[1];
-    const refreshToken = req.headers['refreshtoken'] as string;
+    const accessToken = Array.isArray(req.headers['authorization'])
+      ? req.headers['authorization'][0]
+      : req.headers['authorization']?.split(' ')[1];
+    const refreshToken = Array.isArray(req.headers['refreshtoken'])
+      ? req.headers['refreshtoken'][0]
+      : req.headers['refreshtoken']?.split(' ')[1];
+
     const clientId = req.headers['x-client-id'] as string;
 
     if (!accessToken || !refreshToken || !clientId) {

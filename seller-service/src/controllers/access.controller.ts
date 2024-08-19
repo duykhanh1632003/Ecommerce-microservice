@@ -4,9 +4,28 @@ import { accessService } from '../services/access.service';
 import { tokenValidation } from '../validations/validation'; // Assuming this is where token validation is located
 
 export class AccessController {
+  static async verifyToken(req: Request, res: Response) {
+    try {
+      const result = await accessService.verifyToken(req.body);
+      return res.status(200).json(result);
+    } catch (err) {
+      ErrorHandler.handleError(err as Error, res);
+    }
+  }
+
+
   static async register(req: Request, res: Response) {
     try {
-      const tokens = await accessService.createUser(req.body);
+      const tokens = await accessService.registerUser(req.body);
+      return res.status(201).json(tokens);
+    } catch (err) {
+      ErrorHandler.handleError(err as Error, res);
+    }
+  }
+
+  static async verifyEmail(req: Request, res: Response) {
+    try {
+      const tokens = await accessService.verifyEmail(req.body);
       return res.status(201).json(tokens);
     } catch (err) {
       ErrorHandler.handleError(err as Error, res);
