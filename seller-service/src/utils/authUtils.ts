@@ -11,7 +11,7 @@ const generateSecret = (): string => {
   return crypto.randomBytes(64).toString('hex');
 };
 
-export const createTokens = async (userId: Types.ObjectId) => {
+export const createTokens = async (userId: string) => {
   const accessSecret = generateSecret();
   const refreshSecret = generateSecret();
 

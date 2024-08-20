@@ -22,6 +22,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   isEmailVerified: boolean;
+  verificationToken?: string
   primaryPhoneNumber: string;
   gender: 'Male' | 'Female' | 'Other' | null;
   dateOfBirth: Date | null;

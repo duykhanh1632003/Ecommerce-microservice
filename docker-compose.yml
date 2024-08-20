@@ -1,25 +1,108 @@
-version: "3"
+version: '3.8'
+
 services:
-  nosql-db:
-    image: mvertes/alpine-mongo
+  gateway:
+    build: ./gateway-service
     ports:
-      - "27018:27017"
-    container_name: nosql-db
-    volumes:
-      - ./db/:/data/db
+      - "3000:3000"
+    env_file:
+      - variable.env
+    environment:
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - SELLER_SERVICE_URL=${SELLER_SERVICE_URL}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+      - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
+      - INVENTORY_SERVICE_URL=${INVENTORY_SERVICE_URL}
+      - DISCOUNT_SERVICE_URL=${DISCOUNT_SERVICE_URL}
+      - REVIEW_RATING_SERVICE_URL=${REVIEW_RATING_SERVICE_URL}
+      - SHIPPING_SERVICE_URL=${SHIPPING_SERVICE_URL}
+      - NOTIFICATION_SERVICE_URL=${NOTIFICATION_SERVICE_URL}
+      - MONGO_URI=${MONGO_URI}
+    depends_on:
+      - user
+      - seller
+      - product
+    networks:
+      - app-network
+
   user:
-    build: 
-      dockerfile: Dockerfile   
-      context: ./user-
-    container_name: user-service
+    build: ./user-service
     ports:
       - "3001:3001"
-    restart: always
+    env_file:
+      - ./variable.env
+    environment:
+      - PORT=${USER_PORT}
+      - MONGO_URI=${USER_MONGO_URI}
+    networks:
+      - app-network
     depends_on:
-      - "nosql-db"
+      - user-db
+
+  seller:
+    build: ./seller-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./variable.env
+    environment:
+      - PORT=${SELLER_PORT}
+      - MONGO_URI=${SELLER_MONGO_URI}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - BASE_URL=${BASE_URL}
+      - EMAIL_VERIFICATION_SECRET=${EMAIL_VERIFICATION_SECRET}
+    networks:
+      - app-network
+    depends_on:
+      - seller-db
+
+  product:
+    build: ./product-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./variable.env
+    environment:
+      - PORT=${PRODUCT_PORT}
+      - MONGO_URI=${PRODUCT_MONGO_URI}
+    networks:
+      - app-network
+    depends_on:
+      - product-db
+
+  user-db:
+    image: mongo:4.4
+    container_name: user-db
     volumes:
-      - /app/user-service/node_modules
+      - user-data:/data/db
+    networks:
+      - app-network
 
+  seller-db:
+    image: mongo:4.4
+    container_name: seller-db
+    volumes:
+      - seller-data:/data/db
+    networks:
+      - app-network
 
-      
-     
+  product-db:
+    image: mongo:4.4
+    container_name: product-db
+    volumes:
+      - product-data:/data/db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  user-data:
+  seller-data:
+  product-data:

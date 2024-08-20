@@ -8,6 +8,7 @@ import Joi from 'joi';
 import { emailService } from './email.service';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import { Types } from 'mongoose';
 
 export class AccessService {
 async verifyToken({ accessToken, refreshToken, clientId }: { accessToken: string, refreshToken: string, clientId: string }): Promise<any> {
@@ -19,7 +20,7 @@ async verifyToken({ accessToken, refreshToken, clientId }: { accessToken: string
 
     const decoded = jwt.verify(accessToken, tokenDocument.accessSecret) as { id: string; role: string };
     const user = await User.findById(decoded.id);
-
+    
     if (!user) {
       throw new NotFoundError('User not found');
     }
@@ -127,7 +128,7 @@ async registerUser(userData: IUser): Promise<any> {
     }
 
     // Generate new tokens
-    return createTokens(tokenDocument.userId);
+    return createTokens(tokenDocument.userId.toString());
   }
   
   async revokeToken(refreshToken: string): Promise<any> {

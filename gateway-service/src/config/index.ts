@@ -5,7 +5,7 @@ dotenv.config()
 interface Config {
   port: number;
   userServiceUrl: string;
-  cartServiceUrl: string;
+  sellerService: string;
   discountServiceUrl: string;
   orderServiceUrl: string;
   paymentServiceUrl: string;
@@ -23,7 +23,7 @@ interface Config {
 const config: Config = {
   port: parseInt(process.env.PORT as string, 10) || 3000,
   userServiceUrl: process.env.USER_SERVICE_URL as string,
-  cartServiceUrl: process.env.CART_SERVICE_URL as string,
+  sellerService: process.env.SELLER_SERVICE_URL as string,
   discountServiceUrl: process.env.DISCOUNT_SERVICE_URL as string,
   orderServiceUrl: process.env.ORDER_SERVICE_URL as string,
   paymentServiceUrl: process.env.PAYMENT_SERVICE_URL as string,

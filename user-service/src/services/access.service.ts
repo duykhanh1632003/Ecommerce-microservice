@@ -5,6 +5,7 @@ import { User } from '../models/user.model';
 import { registerValidation, loginValidation } from '../validations/validation'; // Ensure these are correctly imported
 import { IUser } from '../interfaces/user.interface';
 import Joi from 'joi';
+import { Types } from 'mongoose';
 
 export class AccessService {
   async createUser(userData : IUser): Promise<any> {
@@ -38,33 +39,24 @@ export class AccessService {
     }
   }
 
-    async loginUser(email: string, password: string): Promise<any> {
-      // Validate login data
-      const { error } = loginValidation.validate({ email, password });
-      if (error) {
-        throw new ValidationError(error.details[0].message);
-      }
+async loginUser(email: string, password: string): Promise<any> {
+  const user = await User.findOne({ email });
+  if (!user || !(await user.comparePassword(password))) {
+    throw new ValidationError('Invalid email or password');
+  }
 
-      // Find the user by email
-      const user = await User.findOne({ email });
-
-      // Validate password
-      if (!user || !(await user.comparePassword(password))) {
-        throw new ValidationError('Invalid email or password');
-      }
-
-      // Generate tokens
-      const tokens = await createTokens(user.id);
-      return {
-      tokens,
-      user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          name: user.name,
-          primaryPhoneNumber: user.primaryPhoneNumber,
-      },
-  };  
+  // Convert user.id from Schema.Types.ObjectId to Types.ObjectId
+  const tokens = await createTokens(user.id.toString());
+  return {
+    tokens,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      primaryPhoneNumber: user.primaryPhoneNumber,
+    },
+  };
 }
 
   async refreshAccessToken(refreshToken: string): Promise<any> {
@@ -81,7 +73,7 @@ export class AccessService {
     }
 
     // Generate new tokens
-    return createTokens(tokenDocument.userId);
+    return createTokens(tokenDocument.userId.toString());
   }
   
   async revokeToken(refreshToken: string): Promise<any> {

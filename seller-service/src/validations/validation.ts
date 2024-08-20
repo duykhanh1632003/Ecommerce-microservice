@@ -29,7 +29,7 @@ export const registerValidation = Joi.object({
   }),
 });
 
-const loginValidation = Joi.object({
+export const loginValidation = Joi.object({
   identifier: Joi.string().required(), // Can be either username or email
   password: Joi.string().required(),
 });

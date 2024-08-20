@@ -4,7 +4,6 @@ import * as crypto from 'crypto';
 import { Types } from 'mongoose';
 import { Token } from '../models/token.model';
 import { BadRequestError } from './errorHandler';
-import mongoose from 'mongoose';
 
 // Custom request interface is now globally extended
 
@@ -12,7 +11,7 @@ const generateSecret = (): string => {
   return crypto.randomBytes(64).toString('hex');
 };
 
-export const createTokens = async (userId: Types.ObjectId) => {
+export const createTokens = async (userId: string) => {
   const accessSecret = generateSecret();
   const refreshSecret = generateSecret();
 

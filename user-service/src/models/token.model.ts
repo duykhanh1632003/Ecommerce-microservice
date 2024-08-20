@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, plugin } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import toIdPlugin from './plugin/toIdPlugin';
 
 export interface IToken extends Document {
@@ -27,8 +27,9 @@ const TokenSchema: Schema<IToken> = new Schema({
   revoked: { type: Boolean, default: false }, // Indicates if the token has been revoked
 });
 
+// Apply the `toIdPlugin` to the schema
+TokenSchema.plugin(toIdPlugin);
 
-plugin(toIdPlugin)
 // Define the custom method to check if the token is expired or revoked
 TokenSchema.methods.isExpiredOrRevoked = function (): boolean {
   return this.revoked || Date.now() > this.expiresAt.getTime();

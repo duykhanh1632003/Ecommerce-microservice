@@ -26,7 +26,7 @@ app.use(hpp());
 // Microservice URLs
 const services = {
     '/user': config.userServiceUrl,
-    '/cart': config.cartServiceUrl,
+    '/seller': config.sellerService,
     '/discount': config.discountServiceUrl,
     '/order': config.orderServiceUrl,
     '/payment': config.paymentServiceUrl,
